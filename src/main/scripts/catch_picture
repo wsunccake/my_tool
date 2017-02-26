@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import docopt
 from my_tool.web_tool import WebComic
 
@@ -20,7 +21,7 @@ def main(options):
 if __name__ == "__main__":
     option_doc = '''
 Usage:
-  cat_pic -u <web_url> -f <final_page> [-s <start_page>]
+  catch_picture -u <web_url> -f <final_page> [-s <start_page>]
 
 Options:
   -h, --help                       help

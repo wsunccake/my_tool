@@ -16,4 +16,6 @@ default_task = "publish"
 def set_properties(project):
     project.version = '0.1'
     project.depends_on('docopt')
+
+    # web_tool
     project.depends_on('requests')
