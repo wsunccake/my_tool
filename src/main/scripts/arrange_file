@@ -1,0 +1,91 @@
+#!/bin/usr/env python3
+
+import glob
+import os
+import sys
+import logging
+import docopt
+
+logging.basicConfig(stream=sys.stderr, level=logging.INFO, format='%(asctime)s | %(levelname)s | %(funcName)s | %(message)s')
+
+
+def find_files(path, suffix=None):
+    if not os.path.exists(path):
+        raise RuntimeError('No found path: {}'.format(path))
+
+    if suffix is None:
+        suffix = '*'
+    else:
+        suffix = '*.{}'.format(suffix)
+
+    files = glob.glob(os.path.join(path, suffix))
+    return files
+
+
+def find_dirs(path):
+    if not os.path.exists(path):
+        raise RuntimeError('No found path: {}'.format(path))
+
+    dirs = []
+    for f in glob.glob(os.path.join(path, '*')):
+        if os.path.isdir(f):
+            dirs.append(f)
+
+    return dirs
+
+
+def arrange_file(source_path, destination_path='.', suffix='mp4', position=-1):
+    for f in find_files(source_path, suffix):
+        name = f.split()[position][:-4]
+        destination = os.path.join(destination_path, name)
+
+        if not os.path.isdir(destination):
+            os.mkdir(destination)
+            logging.info('Create folder: {}'.format(destination))
+
+        d = os.path.join(destination, os.path.basename(f))
+        logging.info('{} -> {}'.format(f, d))
+        os.rename(f, d)
+
+
+def arrange_dir(source_path, destination_path):
+    for s in find_dirs(source_path):
+        d = os.path.join(destination_path, os.path.basename(s))
+
+        if not os.path.isdir(d):
+            logging.debug('{} -> {}'.format(s, d))
+            os.rename(s, d)
+        else:
+            for f in find_files(s):
+                d1 = os.path.join(d, os.path.basename(f))
+                if not os.path.isfile(d1):
+                    logging.info('{} -> {}'.format(f, d1))
+                    os.rename(f, d1)
+                else:
+                    logging.debug('No move: {}'.format(f))
+
+
+def main(options):
+    source_path = options['--source_dir']
+    destination_path = options['--destination_dir']
+
+    if destination_path is None:
+        destination_path = source_path
+
+    arrange_file(source_path, source_path, 'mp4')
+    arrange_dir(source_path, destination_path)
+
+
+if __name__ == "__main__":
+    option_doc = '''
+Usage:
+  arrange_file -s <source_dir> [-d <destination_dir>]
+
+Options:
+  -h, --help                                help
+  -s, --source_dir <source_dir>             source dir
+  -d, --destination_dir <destination_dir>   destination dir
+'''
+
+    options = docopt.docopt(option_doc, version='0.1')
+    main(options)
